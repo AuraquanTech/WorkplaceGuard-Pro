@@ -34,7 +34,7 @@ jobs:
 
       - name: Debug: List AutoHotkey folders
         run: |
-          $path = "C:\Program Files\AutoHotkey"
+          $path = "C:\\Program Files\\AutoHotkey"
           if (Test-Path $path) {
             Get-ChildItem -Path $path -Recurse
           } else {
@@ -45,12 +45,12 @@ jobs:
 
       - name: Add AutoHotkey Compiler to PATH
         run: |
-          $compilerPath = "C:\Program Files\AutoHotkey\v2\Compiler"
-          if (Test-Path "$compilerPath\Ahk2Exe.exe") {
+          $compilerPath = "C:\\Program Files\\AutoHotkey\\v2\\Compiler"
+          if (Test-Path "$compilerPath\\Ahk2Exe.exe") {
             echo "Compiler directory found: $compilerPath"
             echo "$compilerPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           } else {
-            echo "::error::Could not find AutoHotkey compiler directory at $compilerPath\Ahk2Exe.exe"
+            echo "::error::Could not find AutoHotkey compiler directory at $compilerPath\\Ahk2Exe.exe"
             exit 1
           }
         shell: pwsh
@@ -96,9 +96,9 @@ jobs:
 
       - name: Compile AutoHotkey Backend
         run: |
-          & "C:\Program Files\AutoHotkey\v2\Compiler\Ahk2Exe.exe" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
+          & "C:\\Program Files\\AutoHotkey\\v2\\Compiler\\Ahk2Exe.exe" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
         shell: pwsh
-      
+
       - name: Copy AHK Backend for Bundling
         run: Copy-Item -Path ".\EvidenceCollector.exe" -Destination ".\src-tauri\"
 
@@ -109,10 +109,11 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         with:
           projectPath: ./src-tauri
-          
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: WorkplaceGuard-Pro-Package
           path: |
-            src-tauri/target/release
+            src-tauri/target/release/WorkplaceGuardPro.exe
+            src-tauri/target/release/bundle/msi/
