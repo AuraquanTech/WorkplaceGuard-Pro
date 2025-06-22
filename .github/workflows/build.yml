@@ -33,6 +33,7 @@ jobs:
         shell: pwsh
 
       - name: Debug: List AutoHotkey folders
+        continue-on-error: true
         run: |
           $path = "C:\\Program Files\\AutoHotkey"
           if (Test-Path $path) {
@@ -41,7 +42,6 @@ jobs:
             echo "Directory $path does not exist."
           }
         shell: pwsh
-        continue-on-error: true
 
       - name: Add AutoHotkey Compiler to PATH
         run: |
