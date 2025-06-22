@@ -55,9 +55,17 @@ jobs:
           $config | ConvertTo-Json -Depth 10 | Set-Content -Path "src-tauri/tauri.conf.json" -Encoding UTF8
         shell: pwsh
 
+      - name: Find AutoHotkey Compiler Path
+        id: find_ahk
+        run: |
+          $ahkPath = (Get-Command Ahk2Exe.exe).Source
+          echo "AHK2EXE_PATH=$ahkPath" >> $env:GITHUB_ENV
+          echo "Compiler found at: $ahkPath"
+        shell: pwsh
+
       - name: Compile AutoHotkey Backend
         run: |
-          & "C:\Program Files\AutoHotkey\v2\Compiler\Ahk2Exe.exe" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe" /base "C:\Program Files\AutoHotkey\v2\Compiler\AutoHotkey64.exe"
+          & "${{ env.AHK2EXE_PATH }}" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
         shell: pwsh
       
       - name: Copy AHK Backend for Bundling
