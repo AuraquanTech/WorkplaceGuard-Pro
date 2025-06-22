@@ -16,6 +16,18 @@ jobs:
       - name: Install AutoHotkey v2 and Compiler
         run: choco install autohotkey -y
 
+      - name: Add AutoHotkey Compiler to PATH
+        run: |
+          $compilerDir = (Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).Directory.FullName
+          if ($compilerDir) {
+            echo "Compiler directory found: $compilerDir"
+            echo "$compilerDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          } else {
+            echo "::error::Could not find AutoHotkey compiler directory after installation."
+            exit 1
+          }
+        shell: pwsh
+
       - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
@@ -55,17 +67,9 @@ jobs:
           $config | ConvertTo-Json -Depth 10 | Set-Content -Path "src-tauri/tauri.conf.json" -Encoding UTF8
         shell: pwsh
 
-      - name: Find AutoHotkey Compiler Path
-        id: find_ahk
-        run: |
-          $ahkPath = (Get-Command Ahk2Exe.exe).Source
-          echo "AHK2EXE_PATH=$ahkPath" >> $env:GITHUB_ENV
-          echo "Compiler found at: $ahkPath"
-        shell: pwsh
-
       - name: Compile AutoHotkey Backend
         run: |
-          & "${{ env.AHK2EXE_PATH }}" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
+          Ahk2Exe.exe /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
         shell: pwsh
       
       - name: Copy AHK Backend for Bundling
