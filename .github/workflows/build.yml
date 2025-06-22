@@ -13,14 +13,35 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Verify Chocolatey Installation
+        run: |
+          if (Get-Command choco -ErrorAction SilentlyContinue) {
+            echo "Chocolatey is installed."
+          } else {
+            echo "::error::Chocolatey is not installed or not in PATH."
+            exit 1
+          }
+        shell: pwsh
+
       - name: Install AutoHotkey v2
-        run: choco install autohotkey.install -y
+        run: |
+          choco install autohotkey.install -y --force
+          if ($LASTEXITCODE -ne 0) {
+            echo "::error::Failed to install AutoHotkey via Chocolatey."
+            exit 1
+          }
         shell: pwsh
 
       - name: Debug: List AutoHotkey folders
-        run: Get-ChildItem -Path "C:\Program Files\AutoHotkey" -Recurse
+        run: |
+          $path = "C:\Program Files\AutoHotkey"
+          if (Test-Path $path) {
+            Get-ChildItem -Path $path -Recurse
+          } else {
+            echo "Directory $path does not exist."
+          }
         shell: pwsh
-        continue-on-error: true  # Allows workflow to continue even if this step fails
+        continue-on-error: true
 
       - name: Add AutoHotkey Compiler to PATH
         run: |
@@ -94,5 +115,4 @@ jobs:
         with:
           name: WorkplaceGuard-Pro-Package
           path: |
-            src-tauri/target/release/WorkplaceGuardPro.exe
-            src-tauri/target/release/bundle/msi/
+            src-tauri/target/release
