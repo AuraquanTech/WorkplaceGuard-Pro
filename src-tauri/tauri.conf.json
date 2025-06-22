@@ -1,0 +1,22 @@
+{
+  "package": {
+    "productName": "WorkplaceGuard Pro",
+    "version": "1.0.2"
+  },
+  "build": {
+    // in dev, point at your Vite server:
+    "devPath": "http://localhost:5173",
+    // for prod builds, point at the Vite output:
+    "distDir": "../ui/dist"
+  },
+  "tauri": {
+    "identifier": "com.auraquan.workplaceguard",
+    "windows": [
+      {
+        "title": "WorkplaceGuard Pro",
+        "width": 1200,
+        "height": 800
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+# Dependencies
+/node_modules
+/dist
+/pnpm-lock.yaml
+
+# Tauri build artifacts
+/src-tauri/target/
+/src-tauri/Cargo.lock
+
+# IDE / Editor specific
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db
