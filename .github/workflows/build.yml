@@ -13,20 +13,23 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install AutoHotkey v2 and Compiler
-        run: |
-          choco install autohotkey.install -y
-          choco install autohotkey-compiler -y  # Explicitly install compiler
+      - name: Install AutoHotkey v2
+        run: choco install autohotkey.install -y
         shell: pwsh
+
+      - name: Debug: List AutoHotkey folders
+        run: Get-ChildItem -Path "C:\Program Files\AutoHotkey" -Recurse
+        shell: pwsh
+        continue-on-error: true  # Allows workflow to continue even if this step fails
 
       - name: Add AutoHotkey Compiler to PATH
         run: |
-          $compilerDir = (Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)", "C:\Users\*\AppData\Local" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).Directory.FullName
-          if ($compilerDir) {
-            echo "Compiler directory found: $compilerDir"
-            echo "$compilerDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $compilerPath = "C:\Program Files\AutoHotkey\v2\Compiler"
+          if (Test-Path "$compilerPath\Ahk2Exe.exe") {
+            echo "Compiler directory found: $compilerPath"
+            echo "$compilerPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           } else {
-            echo "::error::Could not find AutoHotkey compiler directory after installation."
+            echo "::error::Could not find AutoHotkey compiler directory at $compilerPath\Ahk2Exe.exe"
             exit 1
           }
         shell: pwsh
@@ -72,7 +75,7 @@ jobs:
 
       - name: Compile AutoHotkey Backend
         run: |
-          Ahk2Exe.exe /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
+          & "C:\Program Files\AutoHotkey\v2\Compiler\Ahk2Exe.exe" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe"
         shell: pwsh
       
       - name: Copy AHK Backend for Bundling
