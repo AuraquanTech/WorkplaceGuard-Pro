@@ -1,0 +1,80 @@
+name: Build WorkplaceGuard Pro
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install AutoHotkey v2 and Compiler
+        run: choco install autohotkey -y
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Node.js, pnpm, and Cache Dependencies
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: |
+            - recursive: true
+              args: [--no-frozen-lockfile]
+
+      - name: Create Correct tauri.conf.json
+        run: |
+          $config = @{
+            package = @{
+              productName = "WorkplaceGuard Pro"
+              version = "1.0.2"
+            }
+            build = @{
+              distDir = "../ui/dist"
+              devPath = "http://localhost:1420"
+            }
+            tauri = @{
+              bundle = @{
+                identifier = "com.auraguan.workplaceguard"
+              }
+              windows = @(
+                @{
+                  title = "WorkplaceGuard Pro"
+                  width = 1200
+                  height = 800
+                  resizable = $true
+                }
+              )
+            }
+          }
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Path "src-tauri/tauri.conf.json" -Encoding UTF8
+        shell: pwsh
+
+      - name: Compile AutoHotkey Backend
+        run: |
+          & "C:\Program Files\AutoHotkey\v2\Compiler\Ahk2Exe.exe" /in "EvidenceCollector.ahk" /out "EvidenceCollector.exe" /base "C:\Program Files\AutoHotkey\v2\Compiler\AutoHotkey64.exe"
+        shell: pwsh
+      
+      - name: Copy AHK Backend for Bundling
+        run: Copy-Item -Path ".\EvidenceCollector.exe" -Destination ".\src-tauri\"
+
+      - name: Build React UI
+        run: pnpm --dir ./ui build
+
+      - name: Build Tauri Application
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: ./src-tauri
+          
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: WorkplaceGuard-Pro-Package
+          path: |
+            src-tauri/target/release/WorkplaceGuardPro.exe
+            src-tauri/target/release/bundle/msi/
