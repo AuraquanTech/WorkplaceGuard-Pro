@@ -14,11 +14,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install AutoHotkey v2 and Compiler
-        run: choco install autohotkey.install -y
+        run: |
+          choco install autohotkey.install -y
+          choco install autohotkey-compiler -y  # Explicitly install compiler
+        shell: pwsh
 
       - name: Add AutoHotkey Compiler to PATH
         run: |
-          $compilerDir = (Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).Directory.FullName
+          $compilerDir = (Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)", "C:\Users\*\AppData\Local" -Recurse -Filter "Ahk2Exe.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).Directory.FullName
           if ($compilerDir) {
             echo "Compiler directory found: $compilerDir"
             echo "$compilerDir" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
